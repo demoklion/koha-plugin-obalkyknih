@@ -1,0 +1,42 @@
+# Build output
+/dist/
+/build/
+*.kpz
+*.tar.gz
+
+# Perl
+/blib/
+/_build/
+/cover_db/
+/nytprof*
+/local/
+/.carton/
+Makefile
+Makefile.old
+MYMETA.*
+pm_to_blib
+*.bak
+*.swp
+*~
+
+# The plugin ships no JS dependencies; ignore in case tooling is ever added
+/node_modules/
+
+# Secrets and local config, never commit
+.env
+.env.*
+*.pem
+*.key
+*.p12
+secrets/
+config.local.*
+
+# Editors and OS
+.DS_Store
+.vscode/
+.idea/
+*.code-workspace
+
+# Agent worktrees and local Claude settings
+/.claude/worktrees/
+/.claude/settings.local.json

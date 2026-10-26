@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability / Bezpečnostní chyba
+    url: https://github.com/demoklion/koha-plugin-obalkyknih/security/advisories/new
+    about: Report privately / Hlaste neveřejně
+  - name: Obálky knih service (registration, missing covers) / Služba Obálky knih (registrace, chybějící obálky)
+    url: https://www.obalkyknih.cz/
+    about: Problems with the service itself go to its operator / Problémy se samotnou službou řeší její provozovatel

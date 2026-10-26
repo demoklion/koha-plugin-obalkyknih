@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  unit:
+    name: Unit tests (no Koha)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Perl modules
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libjson-perl liburi-perl libwww-perl
+      - name: prove
+        run: prove -lr t/
+      - name: JavaScript syntax
+        run: node --check Koha/Plugin/Cz/ObalkyKnih/js/obalkyknih.js
+      - name: JSON specs
+        run: |
+          for f in Koha/Plugin/Cz/ObalkyKnih/*.json; do python3 -m json.tool "$f" > /dev/null; done
+      - name: Build .kpz
+        run: tools/build-kpz.sh 0.0.0-ci
+
+  koha:
+    name: Koha ${{ matrix.koha }} (koha-testing-docker)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - koha: "24.11"
+            branch: "24.11.x"
+          - koha: "26.05"
+            branch: "26.05.x"
+    env:
+      KOHA_BRANCH: ${{ matrix.branch }}
+      KOHA_IMAGE: ${{ matrix.koha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out Koha and koha-testing-docker
+        run: |
+          git clone --branch "$KOHA_BRANCH" --single-branch --depth 1 https://github.com/Koha-Community/Koha.git ../kohaclone
+          git clone --depth 1 https://gitlab.com/koha-community/koha-testing-docker.git ../koha-testing-docker
+
+      - name: Start koha-testing-docker
+        run: |
+          export KTD_HOME="$GITHUB_WORKSPACE/../koha-testing-docker"
+          export SYNC_REPO="$GITHUB_WORKSPACE/../kohaclone"
+          export LOCAL_USER_ID="$(id -u)"
+          cp "$KTD_HOME/env/defaults.env" "$KTD_HOME/.env"
+          sudo sysctl -w vm.max_map_count=262144
+          "$KTD_HOME/bin/ktd" up -d
+          "$KTD_HOME/bin/ktd" --wait-ready 900
+
+      - name: Load tests inside Koha
+        run: |
+          docker cp "$GITHUB_WORKSPACE" kohadev-koha-1:/var/tmp/plugin
+          docker exec kohadev-koha-1 chmod -R a+rX /var/tmp/plugin
+          docker exec kohadev-koha-1 ls /var/tmp/plugin
+          docker exec kohadev-koha-1 koha-shell kohadev -c 'prove -r /var/tmp/plugin/t'
+
+      - name: Install the plugin and smoke-test it
+        run: |
+          tools/build-kpz.sh 0.0.0-ci
+          docker cp dist/koha-plugin-obalkyknih-0.0.0-ci.kpz kohadev-koha-1:/var/tmp/plugin.kpz
+          docker exec kohadev-koha-1 bash -c '
+            set -e
+            dir=$(grep -o "<pluginsdir>[^<]*" /etc/koha/sites/kohadev/koha-conf.xml | head -1 | sed "s/<pluginsdir>//")
+            grep -q "<enable_plugins>1" /etc/koha/sites/kohadev/koha-conf.xml
+            mkdir -p "$dir" && cd "$dir" && unzip -oq /var/tmp/plugin.kpz && chown -R kohadev-koha: "$dir"
+            koha-shell kohadev -c "perl /kohadevbox/koha/misc/devel/install_plugins.pl"
+            koha-plack --restart kohadev
+            sleep 10
+            opac=http://localhost:8080
+            curl -fsS "$opac/api/v1/contrib/obalkyknih/static/js/obalkyknih.js" | grep -q "window.ObalkyKnih"
+            curl -fsS "$opac/api/v1/contrib/obalkyknih/static/css/obalkyknih.css" | grep -q "obalkyknih-extra"
+            body=$(curl -fsS "$opac/api/v1/contrib/obalkyknih/covers?biblionumber=1&biblionumber=2&isbn=9788074151330")
+            echo "covers: $body"
+            echo "$body" | grep -q "\"items\""
+            curl -fsS "$opac/cgi-bin/koha/opac-detail.pl?biblionumber=1" | grep -q "data-obalkyknih-config"
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$opac/api/v1/contrib/obalkyknih/covers?biblionumber=abc")
+            test "$code" = 400
+          '
+
+      - name: Koha logs on failure
+        if: failure()
+        run: |
+          docker ps -a
+          docker exec kohadev-koha-1 bash -c 'tail -n 100 /var/log/koha/kohadev/*.log' || true
+
+  release:
+    name: Release .kpz
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [unit, koha]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build
+        id: build
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          file=$(tools/build-kpz.sh "${TAG#v}" 24.11)
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          sha256sum "$file" | tee "$file.sha256"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          FILE: ${{ steps.build.outputs.file }}
+        run: |
+          notes=$(awk -v v="${TAG#v}" '$0 ~ "^## \\[" v "\\]" {f=1; next} f && /^## \[/ {exit} f' CHANGELOG.md)
+          gh release create "$TAG" "$FILE" "$FILE.sha256" --title "$TAG" --notes "${notes:-See CHANGELOG.md}" --verify-tag
