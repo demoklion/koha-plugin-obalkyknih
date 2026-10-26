@@ -329,7 +329,8 @@ sub _fetch {
         }
         if ( $code == 404 && $body =~ /sign up|referer/i ) {
             # Registration is shared by all servers; trying others won't help.
-            $saw_registration_error = 1;
+            # The body names the IP and referer Obálky saw; show it to admins.
+            ( $saw_registration_error = substr( $body, 0, 300 ) ) =~ s/[^\x20-\x7e\x{a0}-\x{17f}]+/ /g;
             last;
         }
         if ( $code == 400 ) {
@@ -341,7 +342,8 @@ sub _fetch {
         }
         $self->_mark_down($base);
     }
-    return { error => $saw_registration_error ? 'not_registered' : 'unavailable' };
+    return { error => 'not_registered', detail => $saw_registration_error } if defined $saw_registration_error;
+    return { error => 'unavailable' };
 }
 
 sub _is_timeout {

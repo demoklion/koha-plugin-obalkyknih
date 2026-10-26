@@ -1,0 +1,18 @@
+{
+  "/js/obalkyknih.js": {
+    "get": {
+      "x-mojo-to": "Static#get",
+      "tags": ["obalkyknih"],
+      "operationId": "obalkyknihStaticJs",
+      "responses": { "200": { "description": "Script", "schema": { "type": "file" } } }
+    }
+  },
+  "/css/obalkyknih.css": {
+    "get": {
+      "x-mojo-to": "Static#get",
+      "tags": ["obalkyknih"],
+      "operationId": "obalkyknihStaticCss",
+      "responses": { "200": { "description": "Stylesheet", "schema": { "type": "file" } } }
+    }
+  }
+}

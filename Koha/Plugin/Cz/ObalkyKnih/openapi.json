@@ -1,0 +1,73 @@
+{
+  "/covers": {
+    "get": {
+      "x-mojo-to": "Cz::ObalkyKnih::Controller#covers",
+      "operationId": "obalkyknihCovers",
+      "tags": ["obalkyknih"],
+      "summary": "Cover, table of contents and annotation links from Obálky knih",
+      "produces": ["application/json"],
+      "parameters": [
+        {
+          "name": "biblionumber",
+          "in": "query",
+          "type": "array",
+          "items": { "type": "integer" },
+          "collectionFormat": "multi",
+          "maxItems": 50,
+          "required": false
+        },
+        {
+          "name": "isbn",
+          "in": "query",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 40 },
+          "collectionFormat": "multi",
+          "maxItems": 50,
+          "required": false
+        },
+        {
+          "name": "interface",
+          "in": "query",
+          "type": "string",
+          "enum": ["opac", "staff"],
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Items keyed by \"b<biblionumber>\" or \"i<isbn>\"; records without a cover are left out",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "cover_icon_url": { "type": "string" },
+                    "cover_thumbnail_url": { "type": "string" },
+                    "cover_medium_url": { "type": "string" },
+                    "cover_preview510_url": { "type": "string" },
+                    "toc_thumbnail_url": { "type": "string" },
+                    "toc_pdf_url": { "type": "string" },
+                    "backlink_url": { "type": "string" },
+                    "orig_width": { "type": "integer" },
+                    "orig_height": { "type": "integer" },
+                    "annotation": {
+                      "type": "object",
+                      "properties": {
+                        "text": { "type": "string" },
+                        "source": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              "error": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

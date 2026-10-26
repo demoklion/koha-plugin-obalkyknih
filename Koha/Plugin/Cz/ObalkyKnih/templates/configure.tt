@@ -1,0 +1,200 @@
+[%- USE raw -%]
+[%- IF LANG.match('^(cs|sk)') -%]
+[%- T = {
+    title = "Obálky knih: nastavení"
+    saved = "Nastavení uloženo."
+    where = "Kde zobrazovat"
+    opac = "Online katalog (OPAC)"
+    staff = "Služební rozhraní"
+    servers = "Servery Obálek knih"
+    servers_hint = "Jeden na řádek, v pořadí pro záložní přepnutí. Při výpadku prvního se použije další a první se hodinu nezkouší."
+    sizes = "Velikost obálek"
+    size_results = "Výsledky hledání a seznamy"
+    size_detail = "Detail záznamu"
+    size_icon = "malá (54 × 68)"
+    size_medium = "střední (170 × 240)"
+    size_preview510 = "velká (510 × 720)"
+    detail = "Detail záznamu"
+    show_annotation = "Zobrazit anotaci"
+    show_toc = "Zobrazit obsah (náhled a PDF)"
+    local_wins = "Vlastní obálka knihovny má přednost"
+    local_wins_hint = "Když má záznam obálku nahranou v Koze, obálka z Obálek knih se nezobrazí."
+    advanced = "Pokročilé"
+    cache_ttl = "Mezipaměť metadat (sekundy)"
+    cache_ttl_hint = "0 = vypnuto. Zapněte, až Obálky knih potvrdí, že krátké ukládání metadat je v pořádku. Obrázky se nikdy neukládají."
+    timeout = "Časový limit dotazu (sekundy)"
+    sigla = "Sigla knihovny"
+    sigla_hint = "Nepovinné, např. ABA001. Slouží jen pro statistiky Obálek knih u propagačních bloků."
+    test_mode = "Testovací režim"
+    test_mode_hint = "Povolí servery mimo obalkyknih.cz, např. testovací server na vývojové instanci. V provozu nechte vypnuté."
+    save = "Uložit"
+    check = "Ověřit spojení"
+    check_title = "Výsledek ověření"
+    alive = "odpovídá"
+    dead = "neodpovídá"
+    down_until = "přeskočen do"
+    probe_ok = "Obálky knih odpověděly a server je zaregistrován."
+    probe_not_registered = "Obálky knih tento server neznají. V účtu na obalkyknih.cz zaregistrujte IP adresu serveru a adresy katalogů. Odpověď služby:"
+    probe_unavailable = "Žádný server neodpověděl."
+    probe_timeout = "Server odpověděl pomalu (první dotaz na záznam může trvat déle). Zkuste to znovu."
+    probe_other = "Chyba:"
+    help = "Návod"
+    help_text = "Registrace na obalkyknih.cz: adresa katalogu (pro obrázky) a IP adresa serveru Kohy (pro metadata). Do CSP přidejte img-src https://*.obalkyknih.cz."
+} -%]
+[%- ELSE -%]
+[%- T = {
+    title = "Obálky knih: configuration"
+    saved = "Settings saved."
+    where = "Where to show covers"
+    opac = "Online catalogue (OPAC)"
+    staff = "Staff interface"
+    servers = "Obálky knih servers"
+    servers_hint = "One per line, in failover order. When the first fails, the next is used and the first is skipped for one hour."
+    sizes = "Cover size"
+    size_results = "Search results and lists"
+    size_detail = "Record detail"
+    size_icon = "small (54 × 68)"
+    size_medium = "medium (170 × 240)"
+    size_preview510 = "large (510 × 720)"
+    detail = "Record detail"
+    show_annotation = "Show annotation"
+    show_toc = "Show table of contents (thumbnail and PDF)"
+    local_wins = "Local cover takes priority"
+    local_wins_hint = "When a record has a cover uploaded in Koha, the Obálky knih cover is not shown."
+    advanced = "Advanced"
+    cache_ttl = "Metadata cache (seconds)"
+    cache_ttl_hint = "0 = off. Turn it on once Obálky knih confirm that short metadata caching is fine. Images are never stored."
+    timeout = "Request timeout (seconds)"
+    sigla = "Library sigla"
+    sigla_hint = "Optional, e.g. ABA001. Used only for Obálky knih statistics on promotional blocks."
+    test_mode = "Test mode"
+    test_mode_hint = "Allows servers outside obalkyknih.cz, such as a mock server on a development instance. Keep it off in production."
+    save = "Save"
+    check = "Check connection"
+    check_title = "Check result"
+    alive = "alive"
+    dead = "not responding"
+    down_until = "skipped until"
+    probe_ok = "Obálky knih answered and this server is registered."
+    probe_not_registered = "Obálky knih do not know this server. Register the server IP address and the catalogue URLs in your obalkyknih.cz account. Service reply:"
+    probe_unavailable = "No server answered."
+    probe_timeout = "The server was slow (the first lookup of a record can take longer). Try again."
+    probe_other = "Error:"
+    help = "How-to"
+    help_text = "Register at obalkyknih.cz: the catalogue URL (for images) and the Koha server IP address (for metadata). Add img-src https://*.obalkyknih.cz to your CSP."
+} -%]
+[%- END -%]
+[% WRAPPER 'wrapper-staff-tool-plugin.inc' method='configure' plugin_title=T.title %]
+
+<h1>[% T.title | html %] <small>[% version | html %]</small></h1>
+
+[% IF saved %]
+    <div class="alert alert-info" role="status">[% T.saved | html %]</div>
+[% END %]
+
+[% IF checked %]
+    <section class="page-section" aria-labelledby="okcz-check-title">
+        <h2 id="okcz-check-title">[% T.check_title | html %]</h2>
+        <ul>
+            [% FOREACH s IN servers %]
+                <li><code>[% s.url | html %]</code>:
+                    [% IF s.alive %][% T.alive | html %][% ELSE %]<strong>[% T.dead | html %]</strong>[% END %]
+                    [% IF s.down_until %]([% T.down_until | html %] [% s.down_until | html %])[% END %]
+                </li>
+            [% END %]
+        </ul>
+        [% IF ! probe_error %]
+            <div class="alert alert-success" role="status">
+                [% T.probe_ok | html %] <code>[% probe_server | html %]</code>
+                [% IF probe_cover %]<br><img src="[% probe_cover | html %]" alt="" width="85" height="120" style="margin-top:.5em">[% END %]
+            </div>
+        [% ELSIF probe_error == 'not_registered' %]
+            <div class="alert alert-warning" role="alert">[% T.probe_not_registered | html %]<br><code>[% probe_detail | html %]</code></div>
+        [% ELSIF probe_error == 'unavailable' %]
+            <div class="alert alert-warning" role="alert">[% T.probe_unavailable | html %]</div>
+        [% ELSIF probe_error == 'timeout' %]
+            <div class="alert alert-warning" role="alert">[% T.probe_timeout | html %]</div>
+        [% ELSE %]
+            <div class="alert alert-warning" role="alert">[% T.probe_other | html %] [% probe_error | html %]</div>
+        [% END %]
+    </section>
+[% END %]
+
+<form method="post" action="/cgi-bin/koha/plugins/run.pl">
+    [% INCLUDE 'csrf-token.inc' %]
+    <input type="hidden" name="class" value="[% CLASS | html %]">
+    <input type="hidden" name="method" value="configure">
+    <input type="hidden" name="op" value="cud-save">
+
+    <fieldset class="rows">
+        <legend>[% T.where | html %]</legend>
+        <ol>
+            <li><label for="enable_opac">[% T.opac | html %]</label>
+                <input type="checkbox" id="enable_opac" name="enable_opac" value="1" [% IF enable_opac %]checked[% END %]></li>
+            <li><label for="enable_staff">[% T.staff | html %]</label>
+                <input type="checkbox" id="enable_staff" name="enable_staff" value="1" [% IF enable_staff %]checked[% END %]></li>
+            <li><label for="local_wins">[% T.local_wins | html %]</label>
+                <input type="checkbox" id="local_wins" name="local_wins" value="1" aria-describedby="local_wins_hint" [% IF local_wins %]checked[% END %]>
+                <div class="hint" id="local_wins_hint">[% T.local_wins_hint | html %]</div></li>
+        </ol>
+    </fieldset>
+
+    <fieldset class="rows">
+        <legend>[% T.sizes | html %]</legend>
+        <ol>
+            [% FOREACH field IN [ 'size_results', 'size_detail' ] %]
+                [% SET current = ( field == 'size_results' ? size_results : size_detail ) %]
+                <li><label for="[% field | html %]">[% T.$field | html %]</label>
+                    <select id="[% field | html %]" name="[% field | html %]">
+                        [% FOREACH s IN sizes %]
+                            [% SET key = "size_" _ s %]
+                            <option value="[% s | html %]" [% IF s == current %]selected[% END %]>[% T.$key | html %]</option>
+                        [% END %]
+                    </select></li>
+            [% END %]
+        </ol>
+    </fieldset>
+
+    <fieldset class="rows">
+        <legend>[% T.detail | html %]</legend>
+        <ol>
+            <li><label for="show_annotation">[% T.show_annotation | html %]</label>
+                <input type="checkbox" id="show_annotation" name="show_annotation" value="1" [% IF show_annotation %]checked[% END %]></li>
+            <li><label for="show_toc">[% T.show_toc | html %]</label>
+                <input type="checkbox" id="show_toc" name="show_toc" value="1" [% IF show_toc %]checked[% END %]></li>
+        </ol>
+    </fieldset>
+
+    <fieldset class="rows">
+        <legend>[% T.advanced | html %]</legend>
+        <ol>
+            <li><label for="base_urls">[% T.servers | html %]</label>
+                <textarea id="base_urls" name="base_urls" rows="4" cols="50" aria-describedby="base_urls_hint">[% base_urls | html %]</textarea>
+                <div class="hint" id="base_urls_hint">[% T.servers_hint | html %]</div></li>
+            <li><label for="sigla">[% T.sigla | html %]</label>
+                <input type="text" id="sigla" name="sigla" value="[% sigla | html %]" size="8" maxlength="6" pattern="[A-Za-z]{3}[0-9]{3}" aria-describedby="sigla_hint">
+                <div class="hint" id="sigla_hint">[% T.sigla_hint | html %]</div></li>
+            <li><label for="cache_ttl">[% T.cache_ttl | html %]</label>
+                <input type="number" id="cache_ttl" name="cache_ttl" value="[% cache_ttl | html %]" min="0" max="86400" aria-describedby="cache_ttl_hint">
+                <div class="hint" id="cache_ttl_hint">[% T.cache_ttl_hint | html %]</div></li>
+            <li><label for="timeout">[% T.timeout | html %]</label>
+                <input type="number" id="timeout" name="timeout" value="[% timeout | html %]" min="1" max="30"></li>
+            <li><label for="test_mode">[% T.test_mode | html %]</label>
+                <input type="checkbox" id="test_mode" name="test_mode" value="1" aria-describedby="test_mode_hint" [% IF test_mode %]checked[% END %]>
+                <div class="hint" id="test_mode_hint">[% T.test_mode_hint | html %]</div></li>
+        </ol>
+    </fieldset>
+
+    <fieldset class="action">
+        <button type="submit" class="btn btn-primary">[% T.save | html %]</button>
+        <a class="btn btn-default" href="/cgi-bin/koha/plugins/run.pl?class=[% CLASS | uri %]&amp;method=configure&amp;op=check">[% T.check | html %]</a>
+    </fieldset>
+</form>
+
+<section class="page-section">
+    <h2>[% T.help | html %]</h2>
+    <p>[% T.help_text | html %]</p>
+    <p><a href="https://github.com/demoklion/koha-plugin-obalkyknih#readme">github.com/demoklion/koha-plugin-obalkyknih</a></p>
+</section>
+
+[% END %]

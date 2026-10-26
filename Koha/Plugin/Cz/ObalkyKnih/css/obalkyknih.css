@@ -1,0 +1,54 @@
+/* koha-plugin-obalkyknih */
+
+.obalkyknih-img {
+  max-width: 100%;
+  height: auto;
+}
+
+.obalkyknih-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.obalkyknih-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.obalkyknih-credit {
+  font-size: 0.8em;
+}
+
+.obalkyknih-extra {
+  clear: both;
+  margin: 1rem 0;
+  max-width: 48rem;
+}
+
+.obalkyknih-extra h2,
+.obalkyknih-extra h3 {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.obalkyknih-annotation {
+  white-space: pre-line;
+}
+
+.obalkyknih-source {
+  font-size: 0.85em;
+  opacity: 0.85;
+}
+
+.obalkyknih-toc img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
