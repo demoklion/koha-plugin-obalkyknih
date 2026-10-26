@@ -73,10 +73,10 @@ jobs:
 
       - name: Load tests inside Koha
         run: |
-          docker exec kohadev-koha-1 mkdir -p /tmp/plugin
-          docker cp . kohadev-koha-1:/tmp/plugin
+          docker cp "$GITHUB_WORKSPACE" kohadev-koha-1:/tmp/plugin
           docker exec kohadev-koha-1 chmod -R a+rX /tmp/plugin
-          docker exec kohadev-koha-1 koha-shell kohadev -c 'cd /tmp/plugin && prove -lr t/'
+          docker exec kohadev-koha-1 ls /tmp/plugin
+          docker exec kohadev-koha-1 koha-shell kohadev -c 'prove -r /tmp/plugin/t'
 
       - name: Install the plugin and smoke-test it
         run: |
