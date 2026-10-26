@@ -160,12 +160,19 @@ Mock server: tick *Test mode* in the configuration and set the server to
 `http://<host>:8591`. Identifiers ending in an even digit get a generated
 cover, odd ones none.
 
-Not yet verified against the live service (waiting for registration),
-see the issues:
+Checked against the live service (2026-10-26):
 
-- whether Obálky accepts several ISBNs per work as an array (the plugin sends
-  one);
-- whether the image hosts in the JSON follow the answering cache server.
+- The image URLs in the JSON always point to `cache.obalkyknih.cz`, whichever
+  server answered. The plugin rewrites them to the answering server, so a
+  failover also moves the images.
+- Registration reaches the servers at different times: right after approval
+  the metadata API worked on all three servers while `cache` still refused the
+  catalogue `Referer` for images and `cache2`/`cache3` already served them.
+  If covers are missing but **Check connection** says the server is
+  registered, put a working server first in the server list.
+
+Not verified yet: whether Obálky accepts several ISBNs per work as an array
+(the plugin sends one).
 
 ## How this plugin was made
 
