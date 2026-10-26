@@ -14,6 +14,26 @@ i ve služebním rozhraní Kohy. Vyžaduje Kohu 24.11 nebo novější.
 3. Služební rozhraní → *Administrace → Správa pluginů → Nahrát plugin*.
 4. Ještě jednou restartujte Plack, aby se načetla REST cesta pluginu.
 
+### Nebo instalace přes vyhledávání pluginů v Koze
+
+Koha umí hledat pluginy na GitHubu a nainstalovat vydání přímo ze služebního
+rozhraní. Do `<plugin_repos>` v `koha-conf.xml` (vedle zakomentovaných
+výchozích položek) přidejte autora pluginu a restartujte Plack:
+
+```xml
+<plugin_repos>
+    <repo>
+        <name>Obálky knih plugin</name>
+        <org_name>demoklion</org_name>
+        <service>github</service>
+    </repo>
+</plugin_repos>
+```
+
+V *Administrace → Správa pluginů* se objeví vyhledávací pole. Hledejte
+`obalky` a u pluginu zvolte *Instalovat*: Koha stáhne `.kpz` posledního
+vydání. Pak ještě jednou restartujte Plack, aby se načetla REST cesta.
+
 ## 2. Registrace na obalkyknih.cz
 
 Služba obsluhuje jen registrované katalogy. Registrace je zdarma, pro

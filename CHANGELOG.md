@@ -6,6 +6,10 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Docs: installing from Koha's own plugin search (`plugin_repos` in
+  `koha-conf.xml`), in the README and the Czech guide.
+
 ## [0.1.3] - 2026-10-26
 
 ### Added
