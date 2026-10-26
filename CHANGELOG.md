@@ -6,6 +6,14 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-26
+
+### Added
+- Image fallback in the browser: when one Obálky cache server refuses a cover
+  or table-of-contents image (a registration not yet active on that server,
+  or the server is down), the same file is tried on the other configured
+  servers before the cover is given up.
+
 ## [0.1.2] - 2026-10-26
 
 ### Fixed

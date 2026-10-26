@@ -182,6 +182,24 @@
     return a;
   }
 
+  // Obálky activates a library's registration server by server, and a server can be down: when one cache
+  // server refuses an image, try the same file on the others before giving up.
+  var HOSTS = (cfg.imageHosts && cfg.imageHosts.length ? cfg.imageHosts : ["cache.obalkyknih.cz", "cache2.obalkyknih.cz", "cache3.obalkyknih.cz"]);
+
+  function nextHostSrc(img) {
+    var m = /^https:\/\/(cache\d*\.obalkyknih\.cz)(\/.*)$/.exec(img.src);
+    if (!m) return null;
+    var tried = (img.getAttribute("data-obalkyknih-tried") || "").split(" ").filter(Boolean);
+    if (tried.indexOf(m[1]) < 0) tried.push(m[1]);
+    var next = HOSTS.filter(function (h) {
+      return tried.indexOf(h) < 0;
+    })[0];
+    if (!next) return null;
+    tried.push(next);
+    img.setAttribute("data-obalkyknih-tried", tried.join(" "));
+    return "https://" + next + m[2];
+  }
+
   function imgSettled(img) {
     return new Promise(function (resolve) {
       if (img.complete && img.naturalWidth > 1) return resolve(true);
@@ -189,7 +207,9 @@
         resolve(img.naturalWidth > 1);
       });
       img.addEventListener("error", function () {
-        resolve(false);
+        var next = nextHostSrc(img);
+        if (next) img.src = next;
+        else resolve(false);
       });
     });
   }
@@ -399,11 +419,12 @@
       img.height = 240;
       img.loading = "lazy";
       img.decoding = "async";
-      img.addEventListener("error", function () {
+      a.appendChild(img);
+      imgSettled(img).then(function (ok) {
+        if (ok) return;
         a.remove();
         h2.remove();
       });
-      a.appendChild(img);
       sec.appendChild(a);
     }
     root.appendChild(sec);
@@ -446,16 +467,14 @@
       // the fallback instead of showing a broken image.
       var probe = new Image();
       probe.referrerPolicy = "origin";
-      probe.onload = function () {
-        if (probe.naturalWidth <= 1) return el.setAttribute("data-obalkyknih-state", "none");
+      probe.src = img.src;
+      imgSettled(probe).then(function (ok) {
+        if (!ok) return el.setAttribute("data-obalkyknih-state", "none");
+        img.src = probe.src;   // the host that answered
         el.replaceChildren(link);
         el.setAttribute("data-obalkyknih-state", "cover");
         el.dispatchEvent(new CustomEvent("obalkyknih:cover", { bubbles: true, detail: item }));
-      };
-      probe.onerror = function () {
-        el.setAttribute("data-obalkyknih-state", "none");
-      };
-      probe.src = img.src;
+      });
     });
   }
 
