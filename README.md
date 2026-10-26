@@ -70,8 +70,9 @@ referer Obálky saw.
 
 ### Content Security Policy and privacy
 
-If you send a CSP header, add `img-src https://*.obalkyknih.cz`, and do not set
-`Referrer-Policy: no-referrer`. Details in [docs/csp.md](docs/csp.md).
+If you send a CSP header, add `img-src https://*.obalkyknih.cz`. Plugin images
+send Obálky only your catalogue origin (`referrerpolicy="origin"`), so they
+work even under `Referrer-Policy: no-referrer`. Details in [docs/csp.md](docs/csp.md).
 
 Readers' browsers contact obalkyknih.cz. Text for your privacy page, in Czech
 and English: [docs/privacy.md](docs/privacy.md).

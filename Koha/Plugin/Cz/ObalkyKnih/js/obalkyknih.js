@@ -147,6 +147,9 @@
     var src = coverUrl(item, size, keywords);
     if (!src) return null;
     var img = document.createElement("img");
+    // Obálky matches the catalogue origin; send only that, even on pages
+    // with Referrer-Policy: no-referrer (set before src so it applies).
+    img.referrerPolicy = "origin";
     img.src = src;
     img.alt = title ? t("coverOf", { title: title }) : t("cover");
     img.decoding = "async";
@@ -385,8 +388,10 @@
       sec.appendChild(h2);
       var a = document.createElement("a");
       a.href = item.toc_pdf_url;
+      a.referrerPolicy = "origin";
       a.className = "obalkyknih-toc";
       var img = document.createElement("img");
+      img.referrerPolicy = "origin";
       img.src = item.toc_thumbnail_url;
       img.alt = t("tocLink");
       img.width = 170;
@@ -439,6 +444,7 @@
       // Swap only once the image really loaded, so a missing cover keeps
       // the fallback instead of showing a broken image.
       var probe = new Image();
+      probe.referrerPolicy = "origin";
       probe.onload = function () {
         if (probe.naturalWidth <= 1) return el.setAttribute("data-obalkyknih-state", "none");
         el.replaceChildren(link);

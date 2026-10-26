@@ -8,9 +8,9 @@ správy → Novinky / HTML přizpůsobení → OpacPrivacy*, or wherever you kee
 > **Obálky knih.** Náš online katalog zobrazuje obálky, anotace a obsahy knih ze
 > služby Obálky knih (obalkyknih.cz), kterou spravují Jihočeská vědecká
 > knihovna v Českých Budějovicích a Moravská zemská knihovna. Obrázky si načítá přímo váš prohlížeč ze
-> serverů obalkyknih.cz. Ty se tak dozví vaši IP adresu, údaje o prohlížeči
-> a adresu stránky katalogu, ze které obrázek načítáte (tedy i to, jakou knihu
-> si prohlížíte). Do služby neposíláme žádné údaje o vás ani o vašich výpůjčkách.
+> serverů obalkyknih.cz. Ty se tak dozví vaši IP adresu, údaje o prohlížeči,
+> adresu našeho katalogu a to, obálku které knihy načítáte. Do služby
+> neposíláme žádné údaje o vás ani o vašich výpůjčkách.
 
 ## English
 
@@ -19,9 +19,8 @@ správy → Novinky / HTML přizpůsobení → OpacPrivacy*, or wherever you kee
 > South Bohemian Research Library in České Budějovice and the Moravian
 > Library. Your browser loads these
 > images directly from obalkyknih.cz servers, which therefore see your IP
-> address, browser details and the catalogue page you are on (and so which book
-> you are looking at). We do not send any data about you or your loans to the
-> service.
+> address, browser details, our catalogue's address and which book's cover is
+> loaded. We do not send any data about you or your loans to the service.
 
 ## What the Koha server sends / Co posílá server Kohy
 

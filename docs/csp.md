@@ -20,15 +20,17 @@ normal link, so it needs no CSP entry.
 ## Referrer-Policy
 
 Obálky decides whether to serve an image by the `Referer` header, which must
-match the catalogue URL you registered. Browsers send the origin by default
-(`strict-origin-when-cross-origin`), which is what Obálky matches on.
+match the catalogue URL you registered. The plugin's images and
+table-of-contents links carry `referrerpolicy="origin"`: Obálky gets only the
+catalogue origin (e.g. `https://katalog.example.cz/`), never the page path.
+This works even on pages that send `Referrer-Policy: no-referrer`, because the
+element attribute takes precedence.
 
-Do **not** set `Referrer-Policy: no-referrer` (or `same-origin`) on OPAC
-pages, or every cover will fail with a 404. The plugin itself never adds
-`referrerpolicy="no-referrer"` to its images.
+If you build cover images yourself with `ObalkyKnih.coverUrl()`, set
+`referrerpolicy="origin"` on them too.
 
 ## Česky
 
 - Do `img-src` přidejte `https://*.obalkyknih.cz`.
-- Nenastavujte `Referrer-Policy: no-referrer` ani `same-origin`; Obálky podle
-  hlavičky Referer poznají registrovaný katalog.
+- Obrázky pluginu posílají Obálkám jen adresu katalogu (`referrerpolicy="origin"`),
+  takže fungují i na stránkách s `Referrer-Policy: no-referrer`.
