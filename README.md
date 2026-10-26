@@ -32,6 +32,26 @@ Requires Koha 24.11 or newer (tested in CI on 24.11 and 26.05).
 4. Restart Plack once (`koha-plack --restart <instance>`) so the REST routes
    load.
 
+### Or install from Koha's plugin search
+
+Koha can search GitHub for plugins and install a release straight from the
+staff interface. Add this repo's owner to `<plugin_repos>` in `koha-conf.xml`
+(next to the commented-out defaults), then restart Plack:
+
+```xml
+<plugin_repos>
+    <repo>
+        <name>Obálky knih plugin</name>
+        <org_name>demoklion</org_name>
+        <service>github</service>
+    </repo>
+</plugin_repos>
+```
+
+*Administration → Manage plugins* now shows a search box. Search for
+`obalky`, then choose *Install* next to the plugin: Koha downloads the `.kpz`
+of the latest release. Restart Plack once more so the REST routes load.
+
 ## Register at Obálky knih
 
 Obálky serves only registered catalogues. Registration is free and for
