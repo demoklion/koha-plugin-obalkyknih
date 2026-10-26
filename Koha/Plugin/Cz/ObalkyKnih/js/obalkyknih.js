@@ -211,6 +211,17 @@
     var orig = window.verify_cover_images;
     if (typeof orig !== "function") return;
     wrappedVerify = true;
+    // Some pages define verify_cover_images but never call it.
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        if (kohaVerified) return;
+        kohaVerified = true;
+        document.querySelectorAll(".obalkyknih-coverimg[data-obalkyknih-pending]").forEach(function (div) {
+          var slider = div.closest(".cover-slider, .cover-slides");
+          if (slider && div.querySelector("img")) showLate(slider, slider.parentNode, div);
+        });
+      }, HOLD_MS + 6000);
+    });
     window.verify_cover_images = function () {
       var self = this,
         args = arguments;
