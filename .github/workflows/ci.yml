@@ -96,7 +96,12 @@ jobs:
             body=$(curl -fsS "$opac/api/v1/contrib/obalkyknih/covers?biblionumber=1&biblionumber=2&isbn=9788074151330")
             echo "covers: $body"
             echo "$body" | grep -q "\"items\""
-            curl -fsS "$opac/cgi-bin/koha/opac-detail.pl?biblionumber=1" | grep -q "data-obalkyknih-config"
+            page=$(curl -fsS "$opac/cgi-bin/koha/opac-detail.pl?biblionumber=1")
+            echo "$page" | grep -q "data-obalkyknih-config"
+            # the exact URLs the page references (with ?v=), as a browser loads them
+            for u in $(echo "$page" | grep -o "/api/v1/contrib/obalkyknih/static/[^\"]*"); do
+              u=${u//&amp;/&}; echo "page asset: $u"; curl -fsS -o /dev/null "$opac$u"
+            done
             code=$(curl -s -o /dev/null -w "%{http_code}" "$opac/api/v1/contrib/obalkyknih/covers?biblionumber=abc")
             test "$code" = 400
           '
@@ -125,7 +130,8 @@ jobs:
         run: |
           file=$(tools/build-kpz.sh "${TAG#v}" 24.11)
           echo "file=$file" >> "$GITHUB_OUTPUT"
-          sha256sum "$file" | tee "$file.sha256"
+          # bare file name, so "sha256sum -c" works next to the downloaded .kpz
+          (cd "$(dirname "$file")" && sha256sum "$(basename "$file")" | tee "$(basename "$file").sha256")
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}

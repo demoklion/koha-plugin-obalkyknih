@@ -6,6 +6,18 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-26
+
+### Fixed
+- The OPAC and staff script and stylesheet did not load: Koha rejected the
+  `?v=` cache-busting parameter (400 "Malformed query string") because the
+  static routes did not declare it. CI now requests the exact asset URLs from
+  the rendered OPAC page.
+- Release checksum file names the `.kpz` without the build machine's path, so
+  `sha256sum -c` works after download.
+- Record detail: annotation and table of contents go into the record column
+  instead of the narrow cover column.
+
 ## [0.1.1] - 2026-10-26
 
 ### Added

@@ -354,8 +354,9 @@
 
   function addExtras(item) {
     if (!item || (!cfg.showAnnotation && !cfg.showToc)) return;
-    var root = document.querySelector("#catalogue_detail_biblio");
-    if (!root || root.querySelector(".obalkyknih-extra")) return;
+    // the record column (title, details), not the narrow cover column next to it
+    var root = document.querySelector("#catalogue_detail_biblio .record") || document.querySelector("#catalogue_detail_biblio");
+    if (!root || document.querySelector(".obalkyknih-extra")) return;
     var hasAnnot = cfg.showAnnotation && item.annotation && item.annotation.text;
     var hasToc = cfg.showToc && item.toc_thumbnail_url && item.toc_pdf_url;
     if (!hasAnnot && !hasToc) return;
