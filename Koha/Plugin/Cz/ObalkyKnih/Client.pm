@@ -73,6 +73,7 @@ sub new {
         user_agent    => $args{user_agent}    // 'koha-plugin-obalkyknih',
         now           => $args{now}           // sub { time },
         ua            => $args{ua},
+        allow_other   => $other,
         _down         => {},
     }, $class;
     $self->{base_urls} = [ grep {defined} @{ $self->{base_urls} } ];
@@ -275,6 +276,9 @@ sub _sanitise {
 sub _safe_url {
     my ( $self, $url, $server ) = @_;
     return unless defined $url && !ref $url && length $url < 1000;
+    # Test mode: a mock behind the catalogue's own web server may answer with
+    # root-relative paths, so dev works on whatever hostname it is opened at.
+    return $url if $self->{allow_other} && $url =~ m{^/(?![/\\])[\w\-./%]*$};
     my $uri = URI->new($url);
     return unless $uri->scheme && $uri->scheme =~ /^https?$/;
     return $uri->as_string if $self->{extra_hosts}{ lc( $uri->host // '' ) };
