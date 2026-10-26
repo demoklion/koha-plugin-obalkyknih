@@ -7,6 +7,10 @@
 #
 # Then in the plugin configuration: tick "Test mode" and set the server to
 # http://<host>:8591. Never use this in production.
+#
+# If readers' browsers cannot reach that port, proxy it under the catalogue
+# (e.g. Apache ProxyPass /knihovna-mock/ http://127.0.0.1:8591/) and start it
+# with MOCK_PREFIX=/knihovna-mock: image links are then root-relative.
 
 use strict;
 use warnings;
@@ -31,7 +35,11 @@ my %SIZE = ( icon => [ 54, 68 ], thumbnail => [ 27, 36 ], medium => [ 170, 240 ]
 my $app = sub {
     my ($env) = @_;
     my $path  = $env->{PATH_INFO} // '/';
-    my $base  = ( $env->{'psgi.url_scheme'} // 'http' ) . '://' . ( $env->{HTTP_HOST} // 'localhost' );
+    # MOCK_PREFIX=/knihovna-mock: image links become root-relative paths, for a
+    # mock proxied under the catalogue's own origin (needs plugin test mode).
+    my $base = defined $ENV{MOCK_PREFIX} && $ENV{MOCK_PREFIX} =~ m{^(/[\w\-/]*?)/?$}
+        ? $1
+        : ( $env->{'psgi.url_scheme'} // 'http' ) . '://' . ( $env->{HTTP_HOST} // 'localhost' );
     my %query = map { my ( $k, $v ) = split /=/, $_, 2; ( uri_unescape( $k // '' ) => uri_unescape( ( $v // '' ) =~ tr/+/ /r ) ) }
         split /&/, ( $env->{QUERY_STRING} // '' );
 

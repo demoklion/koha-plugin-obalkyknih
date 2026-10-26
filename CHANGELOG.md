@@ -6,6 +6,14 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-26
+
+### Added
+- Test mode accepts root-relative image paths, and the mock server takes
+  `MOCK_PREFIX`, so a mock proxied under the catalogue's own origin works on
+  any development hostname.
+- Test that drives the client against the mock server.
+
 ## [0.1.0] - 2026-10-26
 
 First public version.

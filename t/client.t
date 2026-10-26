@@ -203,6 +203,28 @@ subtest 'test mode: mock server on another host' => sub {
     my $res = $c->books( [ { isbn => '9788074151330' } ] );
     is $res->{items}[0]{cover_medium_url}, 'http://mock.lan/file/cover/1/medium', 'mock image URL kept as is';
     ok !exists $res->{items}[0]{toc_pdf_url}, 'unrelated host still dropped';
+
+    my $ua2 = FakeUA->new(
+        '127.0.0.1/api/books' => [
+            200,
+            encode_json(
+                [ {
+                    bibinfo           => { isbn => '9788074151330' },
+                    cover_medium_url  => '/knihovna-mock/file/cover/1/medium',
+                    toc_thumbnail_url => '//evil.example/x.png',
+                    backlink_url      => 'https://www.obalkyknih.cz/view?isbn=9788074151330',
+                } ]
+            )
+        ],
+    );
+    my $it = $C->new( base_urls => ['http://127.0.0.1:8591'], allow_other_hosts => 1, ua => $ua2 )
+        ->books( [ { isbn => '9788074151330' } ] )->{items}[0];
+    is $it->{cover_medium_url}, '/knihovna-mock/file/cover/1/medium', 'root-relative path kept in test mode';
+    ok !exists $it->{toc_thumbnail_url}, 'protocol-relative URL rejected';
+
+    my $strict = $C->new( ua => FakeUA->new( 'cache.obalkyknih.cz/api/books' => [ 200, encode_json( [ { %$record, cover_medium_url => '/x/medium' } ] ) ] ) )
+        ->books( [ { isbn => '9788074151330' } ] )->{items}[0];
+    ok !exists $strict->{cover_medium_url}, 'relative path rejected outside test mode';
 };
 
 done_testing;
