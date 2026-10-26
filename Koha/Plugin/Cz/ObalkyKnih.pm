@@ -242,6 +242,9 @@ sub _script_tag {
         showToc        => $self->setting('show_toc')        ? JSON::true : JSON::false,
         localWins      => $self->setting('local_wins')      ? JSON::true : JSON::false,
         sigla          => $self->setting('sigla'),
+        # image fallback order in the browser: the configured Obálky cache servers
+        imageHosts     => [ grep { /^cache\d*\.obalkyknih\.cz$/ } map { m{^https?://([^/:]+)}i ? lc $1 : () }
+                split /\s*[\r\n]+\s*/, $self->setting('base_urls') ],
     };
     return '<script src="'
         . $self->_static_url('js/obalkyknih.js')
