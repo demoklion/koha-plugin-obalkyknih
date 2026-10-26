@@ -4,6 +4,9 @@
       "x-mojo-to": "Static#get",
       "tags": ["obalkyknih"],
       "operationId": "obalkyknihStaticJs",
+      "parameters": [
+        { "name": "v", "in": "query", "type": "string", "required": false, "description": "Plugin version, for cache busting" }
+      ],
       "responses": { "200": { "description": "Script", "schema": { "type": "file" } } }
     }
   },
@@ -12,6 +15,9 @@
       "x-mojo-to": "Static#get",
       "tags": ["obalkyknih"],
       "operationId": "obalkyknihStaticCss",
+      "parameters": [
+        { "name": "v", "in": "query", "type": "string", "required": false, "description": "Plugin version, for cache busting" }
+      ],
       "responses": { "200": { "description": "Stylesheet", "schema": { "type": "file" } } }
     }
   }
