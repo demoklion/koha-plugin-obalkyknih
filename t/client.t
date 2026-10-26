@@ -184,4 +184,24 @@ subtest 'batch cap and base URL validation' => sub {
     ok !eval { $C->new( base_urls => ['https://evil.example'] ); 1 }, 'no valid base URL dies';
 };
 
+subtest 'test mode: mock server on another host' => sub {
+    my $ua = FakeUA->new(
+        'mock.lan/api/books' => [
+            200,
+            encode_json(
+                [ {
+                    bibinfo          => { isbn => '9788074151330' },
+                    cover_medium_url => 'http://mock.lan/file/cover/1/medium',
+                    backlink_url     => 'https://www.obalkyknih.cz/view?isbn=9788074151330',
+                    toc_pdf_url      => 'http://other.lan/x.pdf',
+                } ]
+            )
+        ],
+    );
+    my $c   = $C->new( base_urls => ['http://mock.lan:80/'], allow_other_hosts => 1, ua => $ua );
+    my $res = $c->books( [ { isbn => '9788074151330' } ] );
+    is $res->{items}[0]{cover_medium_url}, 'http://mock.lan/file/cover/1/medium', 'mock image URL kept as is';
+    ok !exists $res->{items}[0]{toc_pdf_url}, 'unrelated host still dropped';
+};
+
 done_testing;

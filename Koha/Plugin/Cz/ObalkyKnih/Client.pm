@@ -61,9 +61,10 @@ Only URLs on C<https://*.obalkyknih.cz> survive sanitising.
 
 sub new {
     my ( $class, %args ) = @_;
-    my $self = bless {
-        base_urls     => [ map { _normalise_base($_) } @{ $args{base_urls} || [@DEFAULT_BASE_URLS] } ],
-        timeout       => $args{timeout}       // 6,
+    my $other = $args{allow_other_hosts} ? 1 : 0;
+    my $self  = bless {
+        base_urls     => [ map { _normalise_base( $_, $other ) } @{ $args{base_urls} || [@DEFAULT_BASE_URLS] } ],
+        timeout      => $args{timeout}       // 6,
         alive_timeout => $args{alive_timeout} // 3,
         penalty       => $args{penalty}       // 3600,
         cache         => $args{cache},
@@ -76,6 +77,8 @@ sub new {
     }, $class;
     $self->{base_urls} = [ grep {defined} @{ $self->{base_urls} } ];
     die "No valid Obálky base URL configured\n" unless @{ $self->{base_urls} };
+    # Test mode (a mock server on dev): its own host may serve images too.
+    $self->{extra_hosts} = { map { lc( URI->new($_)->host ) => 1 } grep { !_is_obalky_host( URI->new($_)->host ) } @{ $self->{base_urls} } };
     $self->{ua} //= LWP::UserAgent->new(
         agent        => $self->{user_agent},
         timeout      => $self->{timeout},
@@ -86,13 +89,13 @@ sub new {
 }
 
 sub _normalise_base {
-    my ($url) = @_;
+    my ( $url, $allow_other ) = @_;
     return unless defined $url;
     $url =~ s/^\s+|\s+$//g;
     $url =~ s{/+$}{};
     my $uri = URI->new($url);
-    return unless $uri->scheme && $uri->scheme =~ /^https?$/;
-    return unless _is_obalky_host( $uri->host );
+    return unless $uri->scheme && $uri->scheme =~ /^https?$/ && $uri->host;
+    return unless $allow_other || _is_obalky_host( $uri->host );
     return $uri->scheme . '://' . lc( $uri->host ) . ( $uri->port == $uri->default_port ? '' : ':' . $uri->port );
 }
 
@@ -274,6 +277,7 @@ sub _safe_url {
     return unless defined $url && !ref $url && length $url < 1000;
     my $uri = URI->new($url);
     return unless $uri->scheme && $uri->scheme =~ /^https?$/;
+    return $uri->as_string if $self->{extra_hosts}{ lc( $uri->host // '' ) };
     return unless _is_obalky_host( $uri->host );
     $uri->scheme('https');
     # Image hosts follow the server that answered, so a failover also moves
