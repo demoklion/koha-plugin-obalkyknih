@@ -1,0 +1,21 @@
+name: Feature request / Návrh
+description: Suggest an improvement / Navrhněte vylepšení
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve? / Jaký problém to řeší?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed solution / Navrhované řešení
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Obálky knih terms / Podmínky Obálek knih
+      options:
+        - label: The idea keeps covers live (not stored on the Koha server) and keeps the backlink and credit. / Návrh nechává obálky živé (neukládá je na server Kohy) a zachovává zpětný odkaz a uvedení zdroje.
+          required: true

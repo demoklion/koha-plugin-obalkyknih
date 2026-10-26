@@ -1,0 +1,51 @@
+name: Bug / Chyba
+description: Something does not work / Něco nefunguje
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security problems: please report privately, see SECURITY.md.
+        Bezpečnostní problémy hlaste neveřejně, viz SECURITY.md.
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Plugin version / Verze pluginu
+    validations:
+      required: true
+  - type: input
+    id: koha_version
+    attributes:
+      label: Koha version / Verze Kohy
+      placeholder: "26.05.01"
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where / Kde
+      multiple: true
+      options:
+        - OPAC search results / výsledky hledání
+        - OPAC detail page / detail záznamu
+        - OPAC lists / seznamy
+        - OPAC home page / úvodní stránka
+        - Staff interface / služební rozhraní
+        - Plugin configuration / nastavení pluginu
+        - Other / jiné
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what you expected / Co se stalo a co jste čekali
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Postup
+      description: Example ISBN or record link if possible / ideálně ISBN nebo odkaz na záznam
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console or Koha log / Konzole prohlížeče nebo log Kohy
+      render: text
