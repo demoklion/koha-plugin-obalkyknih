@@ -125,7 +125,8 @@ jobs:
         run: |
           file=$(tools/build-kpz.sh "${TAG#v}" 24.11)
           echo "file=$file" >> "$GITHUB_OUTPUT"
-          sha256sum "$file" | tee "$file.sha256"
+          # bare file name, so "sha256sum -c" works next to the downloaded .kpz
+          (cd "$(dirname "$file")" && sha256sum "$(basename "$file")" | tee "$(basename "$file").sha256")
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
